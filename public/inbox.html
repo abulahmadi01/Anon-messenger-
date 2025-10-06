@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Anonymous Message Inbox</title>
+  </head>
+  <body>
+    <h1>Your Anonymous Inbox</h1>
+
+    <input id="token" type="password" placeholder="Enter your secret token" />
+    <button id="load">Load Messages</button>
+    <p id="status"></p>
+
+    <div id="messages"></div>
+
+    <script>
+      document.getElementById('load').addEventListener('click', async () => {
+        const token = document.getElementById('token').value.trim();
+        if (!token) return alert('Please enter your token');
+        document.getElementById('status').innerText = 'Loading messages...';
+        const res = await fetch('/api/messages?token=' + encodeURIComponent(token));
+        if (!res.ok) {
+          document.getElementById('status').innerText = '❌ Invalid token or server error.';
+          return;
+        }
+        const data = await res.json();
+        if (!data.length) {
+          document.getElementById('status').innerText = 'No messages yet.';
+          return;
+        }
+        document.getElementById('status').innerText = '✅ Messages loaded:';
+        const list = data.map(
+          m => `<div style="border:1px solid #ccc; padding:10px; margin:5px;">
+                  <b>${new Date(m.time).toLocaleString()}</b><br>${m.message}
+                </div>`
+        ).join('');
+        document.getElementById('messages').innerHTML = list;
+      });
+    </script>
+  </body>
+</html>
